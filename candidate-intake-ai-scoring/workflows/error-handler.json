@@ -1,0 +1,84 @@
+{
+  "name": "Error Handler – Candidate Intake",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "name": "Error Trigger",
+      "id": "1b30665c-782f-43b3-b271-3a9788302889"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ],
+      "name": "Send Error Alert",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      },
+      "id": "f2afc631-0950-4528-b39e-b245cc9a5033"
+    },
+    {
+      "parameters": {
+        "jsCode": "const esc = (s) => String(s ?? '—')\n  .replace(/&/g, '&amp;')\n  .replace(/</g, '&lt;')\n  .replace(/>/g, '&gt;');\n\nconst e = $json.execution || {};\nconst text = [\n  '🔴 <b>Workflow error</b>',\n  `Workflow: ${esc($json.workflow?.name)}`,\n  `Node: ${esc(e.lastNodeExecuted)}`,\n  `Error: ${esc(e.error?.message)}`,\n  `Link: ${esc(e.url)}`\n].join('\\n');\n\nreturn { text };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "name": "Build Error Message",
+      "id": "cd729895-0a92-4847-83cd-7489518da2a3"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Error Message": {
+      "main": [
+        [
+          {
+            "node": "Send Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
